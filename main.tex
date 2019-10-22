@@ -1,0 +1,622 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% writeLaTeX Example: A quick guide to LaTeX
+%
+% Source: Dave Richeson (divisbyzero.com), Dickinson College
+% 
+% A one-size-fits-all LaTeX cheat sheet. Kept to two pages, so it 
+% can be printed (double-sided) on one piece of paper
+% 
+% Feel free to distribute this example, but please keep the referral
+% to divisbyzero.com
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% How to use writeLaTeX: 
+%
+% You edit the source code here on the left, and the preview on the
+% right shows you the result within a few seconds.
+%
+% Bookmark this page and share the URL with your co-authors. They can
+% edit at the same time!
+%
+% You can upload figures, bibliographies, custom classes and
+% styles using the files menu.
+%
+% If you're new to LaTeX, the wikibook is a great place to start:
+% http://en.wikibooks.org/wiki/LaTeX
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[10pt,landscape]{article}
+\usepackage{amssymb,amsmath,amsthm,amsfonts,bm}
+\usepackage{multicol,multirow}
+\usepackage{calc}
+\usepackage{ifthen}
+\usepackage[landscape]{geometry}
+\usepackage[colorlinks=true,citecolor=blue,linkcolor=blue]{hyperref}
+
+
+\ifthenelse{\lengthtest { \paperwidth = 11in}}
+    { \geometry{top=.5in,left=.5in,right=.5in,bottom=.5in} }
+	{\ifthenelse{ \lengthtest{ \paperwidth = 297mm}}
+		{\geometry{top=1cm,left=1cm,right=1cm,bottom=1cm} }
+		{\geometry{top=1cm,left=1cm,right=1cm,bottom=1cm} }
+	}
+\pagestyle{empty}
+\makeatletter
+\renewcommand{\section}{\@startsection{section}{1}{0mm}%
+                                {-1ex plus -.5ex minus -.2ex}%
+                                {0.5ex plus .2ex}%x
+                                {\normalfont\large\bfseries}}
+\renewcommand{\subsection}{\@startsection{subsection}{2}{0mm}%
+                                {-1explus -.5ex minus -.2ex}%
+                                {0.5ex plus .2ex}%
+                                {\normalfont\normalsize\bfseries}}
+\renewcommand{\subsubsection}{\@startsection{subsubsection}{3}{0mm}%
+                                {-1ex plus -.5ex minus -.2ex}%
+                                {1ex plus .2ex}%
+                                {\normalfont\small\bfseries}}
+\makeatother
+\setcounter{secnumdepth}{0}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt plus 0.5ex}
+% -----------------------------------------------------------------------
+
+\title{ROB501 Cheat Sheet}
+
+\begin{document}
+
+\raggedright
+\footnotesize
+
+\begin{multicols}{3}
+\setlength{\premulticols}{1pt}
+\setlength{\postmulticols}{1pt}
+\setlength{\multicolsep}{1pt}
+\setlength{\columnsep}{2pt}
+
+\section{L1 Introduction}
+\textbf{inverse problem}: recover unknown parameters from insufficient information to identify/bound the solution (need phy/prob/assumptions) -> find/bound unknowns (sol’n), otherwise \textbf{Forward}, e.g. rendering
+
+\textbf{Well-posed}:  a unique solution exists, changes continuously with the initial conditions
+
+vision problems are \textbf{ill-posed} b/c 2D-3D not unique
+
+\textbf{image function}: $I = \mathcal{P}(G, M, V, L, A, \epsilon)$, $(G, M, V) = \mathcal{P}^{-1}(I) + \text{other sensors, knowledge, experience, etc}$, with Geometry, Materials, Viewpoint, Lighting, Atmospherics, Noise+distractors
+
+Geometry(3D, 4D) vs Appearance(2D projection)
+
+Moravec's Paradox: high-level reasoning requires little computation, while low-level sensorimotor processing requires tremendous resources.
+
+1966+: learning classifiers
+
+Robo advantage: images from multiple vantage points + revisit area scenes to e.g. resolve ambiguity
+
+Automation level 0-5: No, Driver Assistance, Partial, Conditional, High, Full
+
+
+\section{L2 Mathematical Fundamentals}
+Geometric (points, lines) and Photometric (brightness, contrast) are intertwined
+
+Reference frame ($\underset{\Rightarrow}{\mathcal{F}}_v$): physical reference points uniquely fixing (locate and orient) a coordinate system
+
+2D Homogeneous form of points: $\bm{\Tilde{x}} = (\Tilde{x}, \Tilde{y}, \Tilde{w})\in \mathcal{P}^2 \triangleq R^3 \backslash (0,0,0)$ ($\mathcal{P}$ is projective space), back to 2D Inhomogeneous form $\mathbf{\Tilde{x}} = \Tilde{w}(x, y, 1) = \Tilde{w}\mathbf{\Bar{x}}$, 2D Augmented vector:  $\mathbf{\Bar{x}} = (x, y, 1)$
+
+$\Tilde{w}=0$ are ideal pts/pts at infinity/where 2 parallel lines intersect/no inhomogeneous form (so $P^2$ has more pts than $R^2$), think of P as sphere of $r=w$, except antipodal pts => same $\Tilde{x}$ (4 models: homogeneous coord., ray space, unit sphere, augmented affine plane)
+
+2D Homo. form of lines: $\Tilde{\mathbf{l}} = (a,b,c)$, corresponding eqn: $\Bar{\mathbf{x}}\cdot \Tilde{\mathbf{l}} = ax + by +c=0$, $\mathbf{l}=(\hat{n}_x, \hat{n}_y,d) = (\hat{n}, d)$, $\hat{n}$ normal vector, $d$ distance to origin
+
+Points vs Lines: $\Tilde{l} = \Tilde{x}_1 \times \Tilde{x}_2$, $\Tilde{x} = \Tilde{l}_1 \times \Tilde{l}_2$
+
+Cross product: $||\mathbf{u} \times \mathbf{v}|| = ||u||||v||sin\theta$, $\mathbf{u} \times \mathbf{v} = [u]_\times v = \begin{bmatrix} u_2v_3-v_2u_3 & u_3v_1-v_3u_1 & u_1u_2-v_1v_2\end{bmatrix}^T$ where $[u]_\times^T = -[u]_\times$, $[u]_x \triangleq \begin{bmatrix} 0 & -u_3 & u_2 \\ u_3 & 0 & -u_1 \\ -u_2 & u_1 & 0\end{bmatrix}$
+
+Active transform = point coord. change
+
+Homogeneous transfer: 两个如果只有scale不同的H是equivalent的
+3D Rotation: lin. trans about origin, preserves length + space’s orientation (R/LH) - SO(3)group:
+1. Closure: RaRb is also rotation
+2. Associativity: (RaRb)Rc=Ra(RbRc)
+3. Invertible: Unique Ra-1  4. I is R
+
+1. Euler’s Angle (eg. yaw-pitch-roll zyx) Singularity: $\theta_2 = \pi/2$ if a-b-a, and $\theta_2 = 0$ if $a-b-c$
+2. Axis-Angle: the parallel component is rotate-invariant
+3. Quaternions \& Unit sphere $S^3$: $\bm{q}$ \textbf{TODO}
+
+\section{L3 Probability Theory and Estimation Techniques}
+PDF over $[a, b]$ = likelihood of RV in it
+
+marginal distrubution
+
+Posterior = likelihood * prior / evidence
+
+Gaussian distribution formula
+
+Estimation when overdetermined (#pts/epns > #parameters), eg.  linear least sq/regress: $\theta =(m,b)$, minimize sum of residuals’ square:
+
+is the result, “normal equation”. We also have EWLS: each term × certainty: inverse of variance, $\sigma_i^{-2}$
+
+Outlier: observation distant from others, due to measurement variability/error - sol’n: RAndom SAmple Consensus RANSAC:
+
+1. Min \# data pts needed to fit model 
+2. Try $k$ random subsets (p1) of \# 
+3. Count $x$ of them are within error tolerance threshold (parameter 2)?
+4. If x is above threshold of “at least $n$ compatible pts needed (p3)” -> terminate, or repeat till $n$ or $k$
+To choose k: expect k trials needed to select n good pnts, $E[k] = b(1 + 2a + 3a^2 + ... + ia^{i-1}+...) = 1/b = w^{-n}$ where, $b = w^n, a = (1-b)$, $w$ prob of not outlier.
+$Z = P(\text{at least 1 selection is good})=1- (1-w^n)^k = 1 - (1-b)^k$
+
+\section{L4 Image Formation and Optics}
+Camera obscura/Pinhole: poking a small hole in a side of a dark box
+Aperture size↓: sharper & dimmer
+
+Orthographi project: drop the z to get 3D -> 2D, Good for big foco length, $\Tilde{x} = \begin{bmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 0 & 1\end{bmatrix}\Tilde{p}$
+
+Scaled Orthographic: $x=[sI_2 | 0]p$, 写成时也要在最下面加上$[0 0 0 1]$
+
+Ideal pinhole: aperture=single pt. on image = $[I_3|0]$ in camera frame
+$x = [x/z, y/z, 1]^T$: normalized coor.
+
+Camera intrinsic K: 原点at左上；principal pt at (cx, cy), xy轴焦距可不同；pixel不一定长方，会skew s.
+Intrinsic K is affine w/ 5 parameters: $\begin{bmatrix} x_s \\ y_s \\ 1\end{bmatrix} = \begin{bmatrix} f_x & s & c_x \\ 0 & f_y & c_y \\ 0 & 0 & 1\end{bmatrix}\begin{bmatrix} x/z \\ y/z \\ 1\end{bmatrix}\mathbf{K}\dfrac{\mathbf{p}}{z}$
+$\mathbf{K}$ is a calibration on the camera only (zoom f, scaling of pixels, etc)
+
+E is where the camera is in world
+Extrinsic $E=[C|t]$, $C\in SE(3)$
+
+$\mathbf{\Tilde{P}} = \begin{bmatrix} \mathbf{K} & 0 \\ 0^T & 1\end{bmatrix}\begin{bmatrix} \mathbf{C} & \mathbf{t} \\ \mathbf{0}^T & 1\end{bmatrix}$
+
+Augmented $p_w = (x_w, y_w, z_w, 1)$ in world to $x_s = (x_s, y_s, 1, d)$ on image, with $\Tilde{x}_s = \Tilde{P}\Bar{p}_w$ divided by 3rd elem $z$, $d=1/z=1/(C_zp_w+t_z)$
+
+Lens distortion (aperture != a pt)
+Radial (from centre of distortion, Barrel vs.Pincushion) + Tangential (tilting of img plane) = plumb bob D
+
+Image unwarping: no analytical solution (inverse of distortion), so precompute a nonlinear transform to unwarp:  find distorted coordinates from normalized ones → bilinear interpolation→ pixel transform can be determined in a lookup table s.t. inversion is done as each image arrives
+Or, iterate the normalized coord till its predicted distort coord = actual distort
+
+1. World = camera
+2. Camera divide by 3rd row, normalize imag
+3. add lens distortion
+4. calibration (pixel coordinate)
+
+Alternative model (other than plumb bob): fisheye, omni-directional, catadioptric (involves both the reflecting and refracting)
+
+Lens Optical Effects: 1.Chromatic aberration: different colours (λ) focus at different distances (diff f → diff z) & magnification - per-color radial distort 2.Vignetting: daker towards edge, due to fore-shortening of surface, lens aperture ($cos^4$ model)
+
+\section{L5 Image Processing and Transformations}
+Point operation: operate on a single given pixel. Operator h, intensity mapping g \& f: $g(x) = h(f_0(x), ..., f_n(x))$, $x = \text{pixel location(i,j) if not continuous}.$ 1. $g(x)=a(x)f(x)+b(x), a=gain, b=bias$
+2. $g(x)=f(x)^{1/\gamma}$, gamma correction to remove nonlinear radiance map
+Eg. Histogram: lookup table of #(pixels w/a grey level value)  vs. Level  (usually  $r_k \in [0, L-1=255]$). Normalized , $p(r_k) = n_k/n$: prob of rk’s occurrence, n:total #pixel
+Hist. Equaliz’n: intensity mapping func $s_k = T(r_k) = \sum_j^kp(r_j)$, k=0,..L-1
+
+Neighbourhood op: op on pixels around the given one - the followings:
+Linear filtering: weighted sums of the neighbour given pixel (i.j), h is the k-by-l kernel, convolution g=f*h
+Padding: zero, constant, clamp/replicate, cyclic wrap, and mirror
+
+Separable Lin. filter: General size K 的kernel conv* needs K2 加&乘 per pixel. Separable 2D K=vhT.→ 1D hori h followed by 1D vert v s.t only 2K 加乘. Inspect or if SVD’s 1st $\sigma \neq 0$: separable.
+
+Isotropic Gaussian kernel: separable
+Band-pass filter remove high & low freq, LoG used for edge detection
+
+To compute convolution recursively: integral img/summed area table: 
+
+Nonlinear filter: combine neightbours nonlinearly, like median filter (选邻居的median来reduce shot noice), $\alpha$-trimmed median(exclude $\alpha$ extremes), min and max filters, and bilinear filter: soft-reject pixels differing too much from the centre one
+
+Geometric transform $g(x)=f(h(x))$: instead of pt process, this applies to the domain of img. 1. forward $x’=h(x)$, copy pixel $f(x)$ to $g(x’)$, but non-integer $x’$ causes aliasing and blur even with bilinear interpolation. 2. Inverse $x=\hat{h}(x’)$ (w/ inverse matrix), interpolate x from original img to copy to integer $x’$.
+
+Regularization of ill-posed (often ill-conditioned) inverse problem - underconstrained, sol’n not unique.
+Finds minimum energy sol with variational method (ie. measure non-smoothness in a func): Enforce smoothness ε1 & Data penality for pts far from known ones, $\epsilon, d$ 分别是:
+$\int\int f_x^2(x,y) + f_y^2(x,Y)dxdy = \int\int||\nabla f(x,y)||^2dxdy = \int\int (f(x,y) - d(x,y))^2dxdy$
+$\lambda$ control smooth, minimize $\epsilon=\epsilon_d + \lambda \epsilon_1$
+
+\section{L6 Image Features Detection and Description}
+Feature: a Salient (distinctive) Local (small subset of pixels) Repeatable (stable in time space) Compact (math-wise) region
+
+Matching (criteria): find correspondence
+
+Match 2 img: weight sum sq diff, $E_{WSSD}(\mathbf{u} = \sum w(\mathbf{x}_i) (I_1(\mathbf{x}_i + \mathbf{u}) - I_0(\mathbf{x}_i))^2)$
+
+Stability of WSSD -> (I1, I0 own displacement小则I1vI0 criteria stable) -> autocorrelation func
+
+Unique minimum: corner; Multiple min aligned: edge; Cloud: no good peak 
+Harris: rotation/bias invarient, but gain/scale will effect $I_x$,$I_y$ (derivative)
+
+SIFT - location & scale-invariant
+Step1. Find img’s scale space produced by Gaussian convolute (down-sample by 2 each time)
+Step2. Find keypoints w/ Diff-of-Gauss approx. for LoG - select for extrema in 26 neighbours - as the edges
+Step3. Reject strongly asymmetry curvatures (reject edges, keep corner)
+Step4. Assign orientation -> Step 5. Final descriptor; 4x4 grid with 8-orientation(8-bins) histogram per grid ->128-D vector
+
+\section{L7 Image Features Matching and Tracking}
+Matchings approch - distance func f(descripter1, d2)→scalar diff: 1. Sum of sq diff (SSD), between 2 descriptor, within threshold= match, 2. Ratio of SSD, best one= match, 3. Euclidean dist. (SIFT/SURF)between descriptor & threshold value, 4. Hamming dist. (BRISK) for dissimilarity
+
+Confusion matrix: measures matching performance (func of threshold). 
+TP: correct match, FN: incorrectly rejected, FP: incorrectly matched, TN: correctly rejected. 
+Receiver operating characteristic curve w/unit rates: area under 大→好
+
+TPR: TP/real pos
+FPR: FP/real neg 
+Positive predictive PPV: TP/TP+FP
+Accuracy ACC: TP+TN/P+N
+
+Feature mapping -1.Compare all feature to all other: n+(n-1)+…=O(n2), 2. Search spatially close features, assume robot 不怎么动, 3. Hash table/vocab tree in feat. space, 4. Multidimentional k-d tree: iteratively split feat.space by diff axis-aligned hyper planes → each split labeled by dimension and split value→ when searching, new feature is hashed into leaf bin and nearby bins are searched
+
+5. Tracking incrementally: find a set of likely feature loc in 1st img, search for corres locations in subsequent imgs.
+Good cond:1. Limited motion & scene deformation, 2. Good feature to track (same as good-for-matching, or low SSD, or normalized cross-correlation)
+If not good cond: use multi-resolution search or a predictive model. KLT tracker: keep measures of feature dissimilarity between current vs. 1st frame in sequence; discard when dissim grows too large (RMS residual)  w/ an affine motion model to warp imgs’ deformation back to 1st frame
+
+\section{L8 Camera Pose Estimation}
+a
+\section{L9 Stereo Vision}
+a
+\section{L10 Monocular and Stereo Camera Calibration}
+a
+\section{L11 Structure from Motion, Bundle Adjustment}
+a
+
+% \section{What is \LaTeX?}
+% \LaTeX (usually pronounced ``LAY teck,'' sometimes ``LAH teck,'' and never ``LAY tex'') is a mathematics typesetting program that is the standard for most professional mathematics writing. It is based on the typesetting program \TeX\ created by Donald Knuth of Stanford University (his first version appeared in 1978). Leslie Lamport was responsible for creating \LaTeX\, a more user friendly version of \TeX. A team of \LaTeX\ programmers created the current version,  \LaTeX\ 2$\varepsilon$.
+
+% \section{Math vs. text vs. functions}
+% In properly typeset mathematics  variables appear in italics (e.g., $f(x)=x^{2}+2x-3$). The exception to this rule is predefined functions (e.g., $\sin (x)$). Thus it is important to \textbf{always} treat text, variables, and functions correctly. See the difference between $x$ and x, -1 and $-1$, and $sin(x)$ and $\sin(x)$.  
+
+% There are two ways to present a mathematical expression--- \emph{inline} or as an \emph{equation}.
+
+% \subsection{Inline mathematical expressions}
+% Inline expressions occur in the middle of a sentence.  To produce an inline expression, place the math expression between dollar signs (\verb!$!).  For example, typing \verb!$90^{\circ}$ is the same as $\frac{\pi}{2}$ radians!  yields $90^{\circ}$ is the same as $\frac{\pi}{2}$ radians.
+
+% \subsection{Equations}
+% Equations are mathematical expressions that are given their own line and are centered on the page.  These are usually used for important equations that deserve to be showcased on their own line or for large equations that cannot fit inline. To produce an inline expression, place the mathematical expression  between the symbols  \verb!\[! and \verb!\]!. Typing \verb!\[x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}\]! yields \[x=\frac{-b\pm\sqrt{b^2-4ac}}{2a}.\]
+ 
+% \subsection{Displaystyle} 
+% To get full-sized inline mathematical expressions  use  \verb!\displaystyle!. Use this sparingly. Typing \verb!I want this $\displaystyle \sum_{n=1}^{\infty}! \verb!\frac{1}{n}$, not this $\sum_{n=1}^{\infty}! \verb!\frac{1}{n}$.! yields\\ I want  this $\displaystyle \sum_{n=1}^{\infty}\frac{1}{n}$, not this $\sum_{n=1}^{\infty}\frac{1}{n}.$
+
+
+% \section{Images}
+
+% You can put images (pdf, png, jpg, or gif) in your document. They need to be in the same location as your .tex file when you compile the document. Omit   \verb![width=.5in]! if you want the image to be full-sized.
+
+% \verb!\begin{figure}[ht]!\\
+% \verb!\includegraphics[width=.5in]{imagename.jpg}!\\
+% \verb!\caption{The (optional) caption goes here.}!\\
+% \verb!\end{figure}!
+
+% \subsection{Text decorations}
+
+% Your text can be \textit{italics} (\verb!\textit{italics}!), \textbf{boldface} (\verb!\textbf{boldface}!), or \underline{underlined} (\verb!\underline{underlined}!).
+
+% Your math can contain boldface, $\mathbf{R}$ (\verb!\mathbf{R}!), or blackboard bold, $\mathbb{R}$ (\verb!\mathbb{R}!). You may want to used these to express the sets of real numbers ($\mathbb{R}$ or $\mathbf{R}$), integers ($\mathbb{Z}$ or $\mathbf{Z}$), rational numbers ($\mathbb{Q}$ or $\mathbf{Q}$), and natural numbers ($\mathbb{N}$ or $\mathbf{N}$).
+
+% To have text appear in a math expression use \verb!\text!. \verb!(0,1]=\{x\in\mathbb{R}:x>0\text{ and }x\le 1\}! yields $(0,1]=\{x\in\mathbb{R}:x>0\text{ and }x\le 1\}$. (Without the \verb!\text! command it treats ``and'' as three variables: $(0,1]=\{x\in\mathbb{R}:x>0 and x\le 1\}$.)
+
+
+
+% \section{Spaces and new lines}
+
+% \LaTeX\ ignores extra spaces and new lines. For example, 
+
+% \verb!This   sentence will       look!
+
+% \verb!fine after      it is     compiled.!
+
+% This   sentence will       look
+% fine after      it is     compiled.
+
+
+% Leave one full empty line between two paragraphs. Place \verb!\\! at the end of a line to create a new line (but not create a new paragraph).
+
+% \verb!This!
+
+% \verb!compiles!
+
+% ~
+
+% \verb!like\\!
+
+% \verb!this.!
+
+% This
+% compiles 
+
+% like\\
+% this.
+
+% Use  \verb!\noindent! to prevent a paragraph from indenting.
+
+% \section{Comments}
+
+% Use \verb!%! to create a comment. Nothing on the line after the \verb!%! will be typeset. \verb!$f(x)=\sin(x)$ %this is the sine function! yields $f(x)=\sin(x)$%this is the sine function
+
+% \section{Delimiters}
+
+% \begin{tabular}{lll}
+% \emph{description} & \emph{command} & \emph{output}\\
+% parentheses &\verb!(x)! & (x)\\
+% brackets &\verb![x]! & [x]\\
+% curly braces& \verb!\{x\}! & \{x\}\\
+% \end{tabular}
+
+% To make your delimiters large enough to fit the content, use them together with \verb!\right! and \verb!\left!. For example, \verb!\left\{\sin\left(\frac{1}{n}\right)\right\}_{n}^! \verb!{\infty}! produces\\ $\displaystyle \left\{\sin\left(\frac{1}{n}\right)\right\}_{n}^{\infty}$.
+
+% Curly braces are non-printing characters that are used to gather text that has more than one character. Observe the differences between the four expressions \verb!x^2!, \verb!x^{2}!, \verb!x^2t!, \verb!x^{2t}! when typeset: $x^2$, $x^{2}$, $x^2t$, $x^{2t}$.
+
+
+% \section{Lists}
+
+% You can produce ordered and unordered lists.
+
+% \begin{tabular}{lll}
+% \emph{description} & \emph{command} & \emph{output}\\
+% unordered list&
+% \begin{tabular}{l}
+% \verb!\begin{itemize}!\\
+% \verb!  \item!\\
+% \verb!  Thing 1!\\
+% \verb!  \item!\\
+% \verb!  Thing 2!\\
+% \verb!\end{itemize}!
+% \end{tabular}&
+% \begin{tabular}{l}
+% $\bullet$ Thing 1\\
+% $\bullet$ Thing 2
+% \end{tabular}\\
+% ~\\
+% ordered list&
+% \begin{tabular}{l}
+% \verb!\begin{enumerate}!\\
+% \verb!  \item!\\
+% \verb!  Thing 1!\\
+% \verb!  \item!\\
+% \verb!  Thing 2!\\
+% \verb!\end{enumerate}!
+% \end{tabular}&
+% \begin{tabular}{l}
+% 1.~Thing 1\\
+% 2.~Thing 2
+% \end{tabular}
+% \end{tabular}
+
+
+% \section{Symbols (in \emph{math} mode)}
+
+% \subsection{The basics}
+% \begin{tabular}{lll}
+% \emph{description} & \emph{command} & \emph{output}\\
+% addition & \verb!+! & $+$\\
+% subtraction & \verb!-! & $-$\\
+% plus or minus & \verb!\pm! & $\pm$\\
+% multiplication (times) & \verb!\times! & $\times$\\
+% multiplication (dot) & \verb!\cdot! & $\cdot$\\
+% division symbol & \verb!\div! & $\div$\\
+% division (slash) & \verb!/! & $/$\\
+% circle plus & \verb!\oplus! & $\oplus$\\
+% circle times & \verb!\otimes! & $\otimes$\\
+% equal & \verb!=! & $=$\\
+% not equal & \verb!\ne! & $\ne$\\
+% less than & \verb!<! & $<$\\
+% greater than & \verb!>! & $>$\\
+% less than or equal to & \verb!\le! & $\le$\\
+% greater than or equal to & \verb!\ge! & $\ge$\\
+% approximately equal to & \verb!\approx! & $\approx$\\
+% infinity & \verb!\infty! & $\infty$\\
+% dots & \verb!1,2,3,\ldots! & $1,2,3,\ldots$\\
+% dots & \verb!1+2+3+\cdots! & $1+2+3+\cdots$\\
+% fraction & \verb!\frac{a}{b}! & $\frac{a}{b}$\\
+% square root & \verb!\sqrt{x}! & $\sqrt{x}$\\
+% $n$th root & \verb!\sqrt[n]{x}! & $\sqrt[n]{x}$\\
+% exponentiation & \verb!a^b! & $a^{b}$\\
+% subscript & \verb!a_b! & $a_{b}$\\
+% absolute value & \verb!|x|! & $|x|$\\
+% natural log  & \verb!\ln(x)! & $\ln(x)$\\
+% logarithms & \verb!\log_{a}b! & $\log_{a}b$\\
+% exponential function & \verb!e^x=\exp(x)! & $e^{x}=\exp(x)$\\
+% degree & \verb!\deg(f)! & $\deg(f)$\\
+% \end{tabular}
+% \newpage
+
+% \subsection{Functions}
+% \begin{tabular}{lll}
+% \emph{description} & \emph{command} & \emph{output}\\
+% maps to & \verb!\to! & $\to$\\
+% composition& \verb!\circ! & $\circ$\\
+% piecewise& \verb!|x|=! & \multirow{5}{*}{$\displaystyle |x|=\begin{cases}x&x\ge 0\\-x&x<0\end{cases}$}\\
+% function&\verb!\begin{cases}!&\\ 
+% &\verb!x & x\ge 0\\!&\\ 
+% &\verb!-x & x<0!&\\ 
+% &\verb!\end{cases}!&
+% \end{tabular}
+
+% \subsection{Greek and Hebrew letters}
+% \begin{tabular}{llll}
+% \emph{command} & \emph{output}&\emph{command} & \emph{output}\\
+% \verb!\alpha! & $\alpha$&\verb!\tau! & $\tau$\\
+% \verb!\beta! & $\beta$&\verb!\theta! & $\theta$\\
+% \verb!\chi! & $\chi$&\verb!\upsilon! & $\upsilon$\\
+% \verb!\delta! & $\delta$&\verb!\xi! & $\xi$\\
+% \verb!\epsilon! & $\epsilon$&\verb!\zeta! & $\zeta$\\
+% \verb!\varepsilon! & $\varepsilon$&\verb!\Delta! & $\Delta$\\
+% \verb!\eta! & $\eta$&\verb!\Gamma! & $\Gamma$\\
+% \verb!\gamma! & $\gamma$&\verb!\Lambda! & $\Lambda$\\
+% \verb!\iota! & $\iota$&\verb!\Omega! & $\Omega$\\
+% \verb!\kappa! & $\kappa$&\verb!\Phi! & $\Phi$\\
+% \verb!\lambda! & $\lambda$&\verb!\Pi! & $\Pi$\\
+% \verb!\mu! & $\mu$&\verb!\Psi! & $\Psi$\\
+% \verb!\nu! & $\nu$&\verb!\Sigma! & $\Sigma$\\
+% \verb!\omega! & $\omega$&\verb!\Theta! & $\Theta$\\
+% \verb!\phi! & $\phi$&\verb!\Upsilon! & $\Upsilon$\\
+% \verb!\varphi! & $\varphi$&\verb!\Xi! & $\Xi$\\
+% \verb!\pi! & $\pi$&\verb!\aleph! & $\aleph$\\
+% \verb!\psi! & $\psi$&\verb!\beth! & $\beth$\\
+% \verb!\rho! & $\rho$&\verb!\daleth! & $\daleth$\\
+% \verb!\sigma! & $\sigma$&\verb!\gimel! & $\gimel$
+% \end{tabular}
+
+
+% \subsection{Set theory}
+% \begin{tabular}{lll}
+% \emph{description} & \emph{command} & \emph{output}\\
+% set brackets & \verb!\{1,2,3\}! & $\{1,2,3\}$\\
+% element of & \verb!\in! & $\in$\\
+% not an element of & \verb!\not\in! & $\not\in$\\
+% subset of & \verb!\subset! & $\subset$\\
+% subset of & \verb!\subseteq! & $\subseteq$\\
+% not a subset of & \verb!\not\subset! & $\not\subset$\\
+% contains & \verb!\supset! & $\supset$\\
+% contains & \verb!\supseteq! & $\supseteq$\\
+% union & \verb!\cup! & $\cup$\\
+% intersection & \verb!\cap! & $\cap$\\
+% big union & 
+% \verb!\bigcup_{n=1}^{10}A_n! &
+% $\displaystyle \bigcup_{n=1}^{10}A_{n}$\\
+% big intersection & \verb!\bigcap_{n=1}^{10}A_n! &$\displaystyle \bigcap_{n=1}^{10}A_{n}$\\
+% empty set & \verb!\emptyset! & $\emptyset$\\
+% power set & \verb!\mathcal{P}! & $\mathcal{P}$\\
+% minimum & \verb!\min! & $\min$\\
+% maximum & \verb!\max! & $\max$\\
+% supremum & \verb!\sup! & $\sup$\\
+% infimum & \verb!\inf! & $\inf$\\
+% limit superior & \verb!\limsup! & $\limsup$\\
+% limit inferior & \verb!\liminf! & $\liminf$\\
+% closure & \verb!\overline{A}! & $\overline{A}$
+% \end{tabular}
+
+% \subsection{Calculus}
+% \begin{tabular}{lll}
+% \emph{description} & \emph{command} & \emph{output}\\
+% derivative & \verb!\frac{df}{dx}! & $\displaystyle \frac{df}{dx}$\\
+% derivative & \verb!\f'! & $f'$\\
+% partial derivative & 
+% \begin{tabular}{l}
+% \verb!\frac{\partial f}!\\ \verb!{\partial x}! 
+% \end{tabular}& $\displaystyle \frac{\partial f}{\partial x}$\\
+% integral & \verb!\int! & $\displaystyle\int$\\
+% double integral & \verb!\iint! & $\displaystyle\iint$\\
+% triple integral & \verb!\iiint! & $\displaystyle\iiint$\\
+% limits & \verb!\lim_{x\to \infty}! & $\displaystyle \lim_{x\to \infty}$\\
+% summation  & 
+% \verb!\sum_{n=1}^{\infty}a_n! &
+% $\displaystyle \sum_{n=1}^{\infty}a_n$\\
+% product  & 
+% \verb!\prod_{n=1}^{\infty}a_n! &
+% $\displaystyle \prod_{n=1}^{\infty}a_n$
+% \end{tabular}
+
+
+
+
+% \subsection{Logic}
+% \begin{tabular}{lll}
+% \emph{description} & \emph{command} & \emph{output}\\
+% not & \verb!\sim! & $\sim$\\
+% and & \verb!\land! & $\land$\\
+% or & \verb!\lor! & $\lor$\\
+% if...then & \verb!\to! & $\to$\\
+% if and only if & \verb!\leftrightarrow! & $\leftrightarrow$\\
+% logical equivalence & \verb!\equiv! & $\equiv$\\
+% therefore & \verb!\therefore! & $\therefore$\\
+% there exists  & \verb!\exists! & $\exists$\\
+% for all & \verb!\forall! & $\forall$\\
+% implies & \verb!\Rightarrow! & $\Rightarrow$\\
+% equivalent & \verb!\Leftrightarrow! & $\Leftrightarrow$
+% \end{tabular}
+
+% \subsection{Linear algebra}
+% \begin{tabular}{lll}
+% \emph{description} & \emph{command} & \emph{output}\\
+% vector & \verb!\vec{v}! & $\vec{v}$\\
+% vector & \verb!\mathbf{v}! & $\mathbf{v}$\\
+% norm & \verb!||\vec{v}||! & $||\vec{v}||$\\
+% matrix&
+% \begin{tabular}{l}
+% \verb!\left[!\\
+% \verb!\begin{array}{ccc}!\\
+% \verb!1 & 2 & 3 \\!\\
+% \verb!4 & 5 & 6\\!\\
+% \verb!7 & 8 & 0!\\
+% \verb!\end{array}!\\
+% \verb!\right]!\end{tabular}&
+% $\displaystyle \left[\begin{array}{ccc}1 & 2 & 3 \\4 & 5 & 6 \\7 & 8 & 0\end{array}\right]$\\
+% \\determinant&
+% \begin{tabular}{l}
+% \verb!\left|!\\
+% \verb!\begin{array}{ccc}!\\
+% \verb!1 & 2 & 3 \\!\\
+% \verb!4 & 5 & 6 \\!\\
+% \verb!7 & 8 & 0!\\
+% \verb!\end{array}!\\
+% \verb!\right|!
+% \end{tabular}&
+% $\displaystyle \left|\begin{array}{ccc}1 & 2 & 3 \\4 & 5 & 6 \\7 & 8 & 0\end{array}\right|$\\
+% determinant & \verb!\det(A)! & $ \det(A)$\\
+% trace & \verb!\operatorname{tr}(A)! & $\operatorname{tr}(A)$\\
+% dimension & \verb!\dim(V)! & $\dim(V)$\\
+% \end{tabular}
+
+% \subsection{Number theory}
+% \begin{tabular}{lll}
+% \emph{description} & \emph{command} & \emph{output}\\
+% divides & \verb!|! & $|$\\
+% does not divide & \verb!\not |! & $\not |$\\
+% div & \verb!\operatorname{div}! & $\operatorname{div}$\\
+% mod & \verb!\mod! & $\operatorname{mod}$\\
+% greatest common divisor & \verb!\gcd! & $\gcd$\\
+% ceiling & \verb!\lceil x \rceil! & $\lceil x\rceil$\\
+% floor & \verb!\lfloor x \rfloor! & $\lfloor x \rfloor$\\
+% \end{tabular}
+
+
+
+
+% \subsection{Geometry and trigonometry}
+% \begin{tabular}{lll}
+% \emph{description} & \emph{command} & \emph{output}\\
+% angle& \verb!\angle ABC! & $\angle ABC$\\
+% degree& \verb!90^{\circ}! & $90^{\circ}$\\
+% triangle& \verb!\triangle ABC! & $\triangle ABC$\\
+% segment& \verb!\overline{AB}! & $\overline{AB}$\\
+% sine& \verb!\sin! & $\sin$\\
+% cosine& \verb!\cos! & $\cos$\\
+% tangent& \verb!\tan! & $\tan$\\
+% cotangent& \verb!\cot! & $\cot$\\
+% secant& \verb!\sec! & $\sec$\\
+% cosecant& \verb!\csc! & $\csc$\\
+% inverse sine& \verb!\arcsin! & $\arcsin$\\
+% inverse cosine& \verb!\arccos! & $\arccos$\\
+% inverse tangent& \verb!\arctan! & $\arctan$\\
+% \end{tabular}
+
+% \section{Symbols (in \emph{text} mode)}
+
+% The followign symbols do \textbf{not} have to be surrounded by dollar signs.
+
+% \begin{tabular}{lll}
+% \emph{description} & \emph{command} & \emph{output}\\
+% dollar sign & \verb!\$! & \$ \\
+% percent & \verb!\%! & \% \\
+% ampersand & \verb!\&! & \& \\
+% pound & \verb!\#! & \# \\
+% backslash & \verb!\textbackslash! & \textbackslash \\
+% left quote marks & \verb!``! & `` \\
+% right quote marks & \verb!''! & '' \\
+% single left quote  & \verb!`! & ` \\
+% single right quote  & \verb!'! & ' \\
+% hyphen & \verb!X-ray! & X-ray\\
+% en-dash & \verb!pp. 5--15! & pp. 5--15 \\
+% em-dash & \verb!Yes---or no?! & Yes---or no? 
+% \end{tabular}
+
+% \section{Resources}
+% Great symbol look-up site: \href{http://detexify.kirelabs.org/}{Detexify}\\
+% \href{http://amath.colorado.edu/documentation/LaTeX/Symbols.pdf}{\LaTeX\ Mathematical Symbols}\\
+% \href{ftp://tug.ctan.org/pub/tex-archive/info/symbols/comprehensive/symbols-letter.pdf}{The Comprehensive \LaTeX\ Symbol List}\\ 
+% \href{http://mirrors.med.harvard.edu/ctan/info/lshort/english/lshort.pdf}{The Not So Short Introduction to \LaTeX\ 2$\varepsilon$}\\
+% \href{http://www.tug.org/}{TUG: The \TeX\ Users Group}\\
+% \href{http://www.ctan.org/}{CTAN: The Comprehensive \TeX\ Archive Network}\\
+% ~\\
+% \LaTeX\ for the Mac: \href{http://www.tug.org/mactex/}{Mac\TeX}\\
+% \LaTeX\ for the PC: \href{http://www.texniccenter.org/}{{\TeX}nicCenter} and \href{http://miktex.org/}{MiK\TeX}\\
+% \LaTeX\ online: \href{http://www.writelatex.com/}{WriteLaTeX}.
+% \vfill
+% \hrule
+% ~\\
+% Dave Richeson, Dickinson College, \href{http://divisbyzero.com/}{http://divisbyzero.com/}
+\end{multicols}
+
+\end{document}
