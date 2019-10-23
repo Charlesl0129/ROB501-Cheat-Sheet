@@ -33,7 +33,8 @@
 \usepackage{ifthen}
 \usepackage[landscape]{geometry}
 \usepackage[colorlinks=true,citecolor=blue,linkcolor=blue]{hyperref}
-
+\usepackage{graphicx}
+\graphicspath{ {./images/} }
 
 \ifthenelse{\lengthtest { \paperwidth = 11in}}
     { \geometry{top=.5in,left=.5in,right=.5in,bottom=.5in} }
@@ -75,7 +76,7 @@
 \setlength{\columnsep}{2pt}
 
 \section{L1 Introduction}
-\textbf{inverse problem}: recover unknown parameters from insufficient information to identify/bound the solution (need phy/prob/assumptions) -> find/bound unknowns (sol’n), otherwise \textbf{Forward}, e.g. rendering
+\textbf{inverse problem}: recover unknown parameters from insufficient information to identify/bound the solution (need phy/prob/assumptions), find/bound unknowns (sol’n), otherwise \textbf{Forward}, e.g. rendering
 
 \textbf{Well-posed}:  a unique solution exists, changes continuously with the initial conditions
 
@@ -87,21 +88,14 @@ Geometry(3D, 4D) vs Appearance(2D projection)
 
 Moravec's Paradox: high-level reasoning requires little computation, while low-level sensorimotor processing requires tremendous resources.
 
-1966+: learning classifiers
-
-Robo advantage: images from multiple vantage points + revisit area scenes to e.g. resolve ambiguity
-
-Automation level 0-5: No, Driver Assistance, Partial, Conditional, High, Full
-
-
 \section{L2 Mathematical Fundamentals}
 Geometric (points, lines) and Photometric (brightness, contrast) are intertwined
 
-Reference frame ($\underset{\Rightarrow}{\mathcal{F}}_v$): physical reference points uniquely fixing (locate and orient) a coordinate system
+Reference frame ($\underset{\rightarrow}{\mathcal{F}}_v$): physical reference points uniquely fixing (locate and orient) a coordinate system
 
-2D Homogeneous form of points: $\bm{\Tilde{x}} = (\Tilde{x}, \Tilde{y}, \Tilde{w})\in \mathcal{P}^2 \triangleq R^3 \backslash (0,0,0)$ ($\mathcal{P}$ is projective space), back to 2D Inhomogeneous form $\mathbf{\Tilde{x}} = \Tilde{w}(x, y, 1) = \Tilde{w}\mathbf{\Bar{x}}$, 2D Augmented vector:  $\mathbf{\Bar{x}} = (x, y, 1)$
+2D Homogeneous form of points: $\bm{\Tilde{x}} = (\Tilde{x}, \Tilde{y}, \Tilde{w})\in \mathcal{P}^2 \triangleq R^3 \backslash (0,0,0)$ ($\mathcal{P}$ is projective space), back to 2D Inhomogeneous form $\mathbf{\Tilde{x}} = \Tilde{w}(x, y, 1) = \Tilde{w}\mathbf{\Bar{x}}$, 2D augmented vector:  $\mathbf{\Bar{x}} = (x, y, 1)$
 
-$\Tilde{w}=0$ are ideal pts/pts at infinity/where 2 parallel lines intersect/no inhomogeneous form (so $P^2$ has more pts than $R^2$), think of P as sphere of $r=w$, except antipodal pts => same $\Tilde{x}$ (4 models: homogeneous coord., ray space, unit sphere, augmented affine plane)
+$\Tilde{w}=0$ are ideal pts/pts at infinity/where 2 parallel lines intersect/no inhomogeneous form (so $P^2$ has more pts than $R^2$)
 
 2D Homo. form of lines: $\Tilde{\mathbf{l}} = (a,b,c)$, corresponding eqn: $\Bar{\mathbf{x}}\cdot \Tilde{\mathbf{l}} = ax + by +c=0$, $\mathbf{l}=(\hat{n}_x, \hat{n}_y,d) = (\hat{n}, d)$, $\hat{n}$ normal vector, $d$ distance to origin
 
@@ -111,145 +105,271 @@ Cross product: $||\mathbf{u} \times \mathbf{v}|| = ||u||||v||sin\theta$, $\mathb
 
 Active transform = point coord. change
 
-Homogeneous transfer: 两个如果只有scale不同的H是equivalent的
-3D Rotation: lin. trans about origin, preserves length + space’s orientation (R/LH) - SO(3)group:
-1. Closure: RaRb is also rotation
-2. Associativity: (RaRb)Rc=Ra(RbRc)
-3. Invertible: Unique Ra-1  4. I is R
+Transformation in 2D
 
-1. Euler’s Angle (eg. yaw-pitch-roll zyx) Singularity: $\theta_2 = \pi/2$ if a-b-a, and $\theta_2 = 0$ if $a-b-c$
-2. Axis-Angle: the parallel component is rotate-invariant
-3. Quaternions \& Unit sphere $S^3$: $\bm{q}$ \textbf{TODO}
+\includegraphics[width=6cm]{images/trans_2d}
+
+1. Euler’s Angle (eg. yaw-pitch-roll=z-y-x=$\mathbf{C}(\psi)\mathbf{C}(\theta)\mathbf{C}(\phi)$) Singularity when $\theta = \pi/2$.
+
+2. Axis-Angle (Rodriguez's formula): $\mathbf{C}(\hat{\mathbf{n}}, \theta) = \mathbf{I}_3 + sin\theta [\hat{\mathbf{n}}]_\times + (1-cos\theta)[\hat{\mathbf{n}}]^2_\times$
+
+3. Quaternions($\mathbb{H}$)
+$\bm{q} = q_0 + \mathbf{q} = q_0 + q_1\hat{\mathbf{i}} + q_2\hat{\mathbf{j}} + q_3\hat{\mathbf{k}}$, $i^2 =j^2=k^2=ijk=-1$. Unit quaternions $\mathbb{S}^3 = \{\bm{q}\in \mathbb{H} | ||\bm{q}^2 = q_0^2 + q_1^2 + q_2^2 + q_3^2=1||\}$, $\bm{q} = \begin{bmatrix} q_0 \mathbf{q}\end{bmatrix} = \begin{bmatrix} cos(\theta/2) \\ \hat{\mathbf{u}}sin(\theta/2)\end{bmatrix}$, $\mathbf{C}(\hat{\mathbf{n}}, \theta) = \mathbf{I}_3 + 2q_0[\mathbf{q}]_\times + 2[\mathbf{q}]_\times^2$, $\bm{p}\oplus\bm{q} = (p_0+\mathbf{p}) \oplus (q_0+\mathbf{q}) = p_0q_0-\mathbf{p}^T\mathbf{q}+p_0\mathbf{q}+q_0\mathbf{p}+\mathbf{p}\times\mathbf{q}$
+
+
 
 \section{L3 Probability Theory and Estimation Techniques}
-PDF over $[a, b]$ = likelihood of RV in it
-
-marginal distrubution
-
 Posterior = likelihood * prior / evidence
 
-Gaussian distribution formula
+Expectation $E(f(x)) = \sum_xf(x)p(x)$ or $\int_x f(x)p(x)dx$
 
-Estimation when overdetermined (#pts/epns > #parameters), eg.  linear least sq/regress: $\theta =(m,b)$, minimize sum of residuals’ square:
+Gaussian(normal): $X \sim \mathcal{N}(\mu,\,\sigma^{2}) = \dfrac{1}{\sqrt{2\sigma^2\pi}}e^{-\dfrac{(x-\mu)^2}{2\sigma^2}}$
+$\mathbf{x}\sim \mathcal{N}(\mathbf{\mu},\,\mathbf{\Sigma}) = 2\pi^{-\frac{n}{2}}det\Sigma^{-\frac{1}{2}}e^{-\frac{1}{2}(\mathbf{x} - \mathbf{\mu})^T\Sigma^{-1}(\mathbf{x} - \mathbf{\mu})}$
 
-is the result, “normal equation”. We also have EWLS: each term × certainty: inverse of variance, $\sigma_i^{-2}$
+Estimation when overdetermined (\#pts/epns > \#parameters), e.g.  linear least sq/regress: $\theta =(m,b)$, minimize sum of residuals’ square: $E_{WLS} = \sum_i w_i||\Tilde{y}_i - \mathbf{J}(x_i)\mathbf{\theta}||^2$
+
+$\hat{\theta} = [\sum_i \mathbf{J}^T(x_i)W\mathbf{J}(x_i)]^{-1}[\mathbf{J}^T(x_i)\Tilde{y}_i]$, $w=\sigma_i^{-2}$
 
 Outlier: observation distant from others, due to measurement variability/error - sol’n: RAndom SAmple Consensus RANSAC:
 
-1. Min \# data pts needed to fit model 
-2. Try $k$ random subsets (p1) of \# 
-3. Count $x$ of them are within error tolerance threshold (parameter 2)?
-4. If x is above threshold of “at least $n$ compatible pts needed (p3)” -> terminate, or repeat till $n$ or $k$
-To choose k: expect k trials needed to select n good pnts, $E[k] = b(1 + 2a + 3a^2 + ... + ia^{i-1}+...) = 1/b = w^{-n}$ where, $b = w^n, a = (1-b)$, $w$ prob of not outlier.
-$Z = P(\text{at least 1 selection is good})=1- (1-w^n)^k = 1 - (1-b)^k$
+1. Min \# data pts needed to fit model\par
+2. Try $k$ random subsets  of \# \par
+3. Count $x$ of them are within error tolerance threshold ($t$)?\par
+4. If x is above threshold of “at least $n$ compatible pts” -> terminate, or repeat till $n$ or $k$
+Params: $k, n, t$
+
+$E[k] = b(1 + 2a + 3a^2 + ... + ia^{i-1}+...) = 1/b = w^{-n}$ where, $b = w^n, a = (1-b)$, $w$ prob of not outlier.
+$Z = P{\text{(}\geq \text{1 selection is good})=1- (1-w^n)^k = 1 - (1-b)^k}$, $k=\frac{log(1-z)}{log(1-b)}$
 
 \section{L4 Image Formation and Optics}
-Camera obscura/Pinhole: poking a small hole in a side of a dark box
-Aperture size↓: sharper & dimmer
+Camera obscura/Pinhole camera: aperture size decreases, images are sharper \& dimmer.\\
+\textbf{(scaled) orthography projection}: drop the z to get 3D -> 2D, good for long focal length, $\Tilde{x} = \begin{bmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 0 & 1\end{bmatrix}\Tilde{p}$
 
-Orthographi project: drop the z to get 3D -> 2D, Good for big foco length, $\Tilde{x} = \begin{bmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 0 & 1\end{bmatrix}\Tilde{p}$
+Ideal pinhole: aperture=single pt. All light rays intersect at the \textbf{optic center}, origin of the camera frame.\\
+\textbf{Optical axis} pierces the image plane at the \textbf{principal point} and 
+\textbf{optic center}
+landmark point $p = (x,y,z) $ to image plane: projective map:
+$\Bar{x} = \mathcal{P}_z(\mathbf{p}) = [x/z, y/z, 1]^T$: normalized image plane coord. (Similar triangles)\\
+Field of View $\theta$: $tan\frac{\theta}{2} = \frac{W}{2f}$, f: focal length, W: Sensor width\\
+Intrinsic params. matrix $\mathbf{K}$: principal pt. at $(c_x, c_y)$, skew, focal length (affine w/ 5 parameters)\\
+ $\begin{bmatrix} x_s \\ y_s \\ 1\end{bmatrix} = \begin{bmatrix} f_x & s & c_x \\ 0 & f_y & c_y \\ 0 & 0 & 1\end{bmatrix}\begin{bmatrix} x/z \\ y/z \\ 1\end{bmatrix} = \mathbf{K}\dfrac{\mathbf{p}}{z}$
 
-Scaled Orthographic: $x=[sI_2 | 0]p$, 写成时也要在最下面加上$[0 0 0 1]$
+Extrinsic params. matrix $\mathbf{E}=[\mathbf{C}|\mathbf{t}]$. ($\mathbf{E}_{cw}$ is world to camera)
 
-Ideal pinhole: aperture=single pt. on image = $[I_3|0]$ in camera frame
-$x = [x/z, y/z, 1]^T$: normalized coor.
-
-Camera intrinsic K: 原点at左上；principal pt at (cx, cy), xy轴焦距可不同；pixel不一定长方，会skew s.
-Intrinsic K is affine w/ 5 parameters: $\begin{bmatrix} x_s \\ y_s \\ 1\end{bmatrix} = \begin{bmatrix} f_x & s & c_x \\ 0 & f_y & c_y \\ 0 & 0 & 1\end{bmatrix}\begin{bmatrix} x/z \\ y/z \\ 1\end{bmatrix}\mathbf{K}\dfrac{\mathbf{p}}{z}$
-$\mathbf{K}$ is a calibration on the camera only (zoom f, scaling of pixels, etc)
-
-E is where the camera is in world
-Extrinsic $E=[C|t]$, $C\in SE(3)$
-
-$\mathbf{\Tilde{P}} = \begin{bmatrix} \mathbf{K} & 0 \\ 0^T & 1\end{bmatrix}\begin{bmatrix} \mathbf{C} & \mathbf{t} \\ \mathbf{0}^T & 1\end{bmatrix}$
+Together:
+$\mathbf{\Tilde{P}} = \begin{bmatrix} \mathbf{K} & 0 \\ \mathbf{0}^T & 1\end{bmatrix}\begin{bmatrix} \mathbf{C} & \mathbf{t} \\ \mathbf{0}^T & 1\end{bmatrix} = \Tilde{\mathbf{K}}\mathbf{E}$
 
 Augmented $p_w = (x_w, y_w, z_w, 1)$ in world to $x_s = (x_s, y_s, 1, d)$ on image, with $\Tilde{x}_s = \Tilde{P}\Bar{p}_w$ divided by 3rd elem $z$, $d=1/z=1/(C_zp_w+t_z)$
 
 Lens distortion (aperture != a pt)
-Radial (from centre of distortion, Barrel vs.Pincushion) + Tangential (tilting of img plane) = plumb bob D
+\textbf{Radial} (from \textbf{centre of distortion}, Barrel vs.Pincushion) + \textbf{Tangential} (tilting of img plane) = \textbf{plumb bob model}: $\begin{bmatrix} x_d \\ y_d \end{bmatrix} = (1 + \kappa r^2 + \kappa_2 r^4 + \kappa_3 r^6)\begin{bmatrix} x_n \\ y_n \end{bmatrix} + \begin{bmatrix} 2\tau_1 x_ny_n + \tau_2(r^2 + 2x_n^2) \\ 2\tau_2 x_ny_n + \tau_1(r^2 + 2y_n^2) \end{bmatrix}$
 
-Image unwarping: no analytical solution (inverse of distortion), so precompute a nonlinear transform to unwarp:  find distorted coordinates from normalized ones → bilinear interpolation→ pixel transform can be determined in a lookup table s.t. inversion is done as each image arrives
-Or, iterate the normalized coord till its predicted distort coord = actual distort
+Image unwarping: no analytical solution (inverse of distortion), so precompute a nonlinear transform to unwarp:  find distorted coordinates from normalized ones, bilinear interpolation
 
-1. World = camera
-2. Camera divide by 3rd row, normalize imag
-3. add lens distortion
-4. calibration (pixel coordinate)
+From world to image plane
+\includegraphics[width=6cm]{images/world_to_image.png}
 
 Alternative model (other than plumb bob): fisheye, omni-directional, catadioptric (involves both the reflecting and refracting)
 
-Lens Optical Effects: 1.Chromatic aberration: different colours (λ) focus at different distances (diff f → diff z) & magnification - per-color radial distort 2.Vignetting: daker towards edge, due to fore-shortening of surface, lens aperture ($cos^4$ model)
+Lens Optical Effects:
+1.\textbf{Chromatic aberration}: different colours ($\lambda$) focus at different distances (diff f to diff z) \& magnification - per-color radial distort 
+2.\textbf{Vignetting}: darker towards edge, due to fore-shortening(visual compression of an image) of surface, lens aperture ($cos^4$ model)
+
+Digital Camera sensors:\\
+CCD (accumulate photons and then use 'bucket brigade' charge readout)\\
+CMOS (measures photons using conductivity changes)\\
+
+spatial sampling (may cause aliasing): need $f_s \geq 2f_{max}$
+
+Colour Cameras and Filter Arrays, from 3 (RGB) to filter on top - Bayer Mosaics
 
 \section{L5 Image Processing and Transformations}
-Point operation: operate on a single given pixel. Operator h, intensity mapping g \& f: $g(x) = h(f_0(x), ..., f_n(x))$, $x = \text{pixel location(i,j) if not continuous}.$ 1. $g(x)=a(x)f(x)+b(x), a=gain, b=bias$
-2. $g(x)=f(x)^{1/\gamma}$, gamma correction to remove nonlinear radiance map
-Eg. Histogram: lookup table of #(pixels w/a grey level value)  vs. Level  (usually  $r_k \in [0, L-1=255]$). Normalized , $p(r_k) = n_k/n$: prob of rk’s occurrence, n:total #pixel
-Hist. Equaliz’n: intensity mapping func $s_k = T(r_k) = \sum_j^kp(r_j)$, k=0,..L-1
 
-Neighbourhood op: op on pixels around the given one - the followings:
-Linear filtering: weighted sums of the neighbour given pixel (i.j), h is the k-by-l kernel, convolution g=f*h
-Padding: zero, constant, clamp/replicate, cyclic wrap, and mirror
+\textbf{Point operation}
 
-Separable Lin. filter: General size K 的kernel conv* needs K2 加&乘 per pixel. Separable 2D K=vhT.→ 1D hori h followed by 1D vert v s.t only 2K 加乘. Inspect or if SVD’s 1st $\sigma \neq 0$: separable.
+(1) \textbf{Per-pixel transform}: 
+e.g. thresholding, brightness adjustment, contrast adjustment, gamma correction\\
+may require global information
+General image processing operator: $g(x) = h(f_0(x), ..., f_n(x))$,\\
+discrete: $\text{pixel location} x = (i,j), g(i,j) = h(f(i,j)).$ \\
 
-Isotropic Gaussian kernel: separable
-Band-pass filter remove high & low freq, LoG used for edge detection
+1. $g(x)=a(x)f(x)+b(x), a=gain, b=bias$
+2. $g(x)=f(x)^{1/\gamma}$, gamma correction to remove nonlinear radiance map\\
 
-To compute convolution recursively: integral img/summed area table: 
+(2) \textbf{Histogram}: lookup table of \# pixels with a grey level value vs. Level  (usually  $r_k \in [0, L-1=255]$). Normalized , $p(r_k) = n_k/n$: prob of $r_k$’s occurrence, $n$:total \# pixel\\
+Hist. Equaliz’n: intensity mapping func. $s_k = T(r_k) = \sum_{j=0}^k p_r(r_j) = \sum_{j=0}^k \dfrac{n_j}{n}, k=0,..L-1$
 
-Nonlinear filter: combine neightbours nonlinearly, like median filter (选邻居的median来reduce shot noice), $\alpha$-trimmed median(exclude $\alpha$ extremes), min and max filters, and bilinear filter: soft-reject pixels differing too much from the centre one
+\textbf{Neighbourhood op}
 
-Geometric transform $g(x)=f(h(x))$: instead of pt process, this applies to the domain of img. 1. forward $x’=h(x)$, copy pixel $f(x)$ to $g(x’)$, but non-integer $x’$ causes aliasing and blur even with bilinear interpolation. 2. Inverse $x=\hat{h}(x’)$ (w/ inverse matrix), interpolate x from original img to copy to integer $x’$.
+\textbf{Linear filtering}: convolution $g=f*h$, padding: zero, constant, clamp/replicate, cyclic wrap, and mirror
 
-Regularization of ill-posed (often ill-conditioned) inverse problem - underconstrained, sol’n not unique.
-Finds minimum energy sol with variational method (ie. measure non-smoothness in a func): Enforce smoothness ε1 & Data penality for pts far from known ones, $\epsilon, d$ 分别是:
-$\int\int f_x^2(x,y) + f_y^2(x,Y)dxdy = \int\int||\nabla f(x,y)||^2dxdy = \int\int (f(x,y) - d(x,y))^2dxdy$
-$\lambda$ control smooth, minimize $\epsilon=\epsilon_d + \lambda \epsilon_1$
+\textbf{Separable Lin. filter}: General size $K$ kernel conv. needs $K^2$ op per pixel. Separable: 2D $K=vh^T$, 1D horizontal $h$ then 1D vertical $v$ s.t only $2K$ op. Inspect or if SVD’s 1st $\sigma \neq 0$. Isotropic Gaussian kernel is separable.
+
+Gaussian filter: $G(x, y; \sigma) = \dfrac{1}{2\pi \sigma^2}e^{-\frac{x^2 + y^2}{2\sigma^2}}$
+
+Band-pass filter (LoG, DoG) remove high & low freq, LoG used for edge detection, LoG (scale-space properties): $\nabla^2G(x,y;\sigma) = \dfrac{\partial^2G}{dx^2}+\dfrac{\partial^2G}{dy^2}=\dfrac{x^2 + y^2 + 2\sigma^2}{\sigma^4}G(x,y;\sigma)$
+
+\textbf{Integral image/ summed area table:}$s(i,j) =\sum_{k=0}^i\sum_{l=0}^{j}f(k,l)= s(i-1,j)+s(i,j-1)-s(i-1,j-1)+s(i,j)$
+
+\textbf{Nonlinear filter}: median filter, $\alpha$-trimmed median(exclude $\alpha$ extremes), min and max filters, and bilateral filter.
+
+\textbf{Geometric transform} $g(x)=f(h(x))$:
+1. Forward $x’=h(x)$, copy pixel $f(x)$ to $g(x’)$, but non-integer $x’$ causes aliasing and blur even with bilinear interpolation. 
+2. Inverse $x=\hat{h}(x’)$ (with inverse matrix), interpolate $x$ from original img to copy to integer $x’$.
+
+\textbf{Regularization} of ill-posed (often ill-conditioned) inverse problem
+$\epsilon_d = \int\int f_x^2(x,y) + f_y^2(x,Y)dxdy = \int\int||\nabla f(x,y)||^2dxdy$
+$\epsilon_d = \int\int (f(x,y) - d(x,y))^2dxdy$
+minimize $\epsilon=\epsilon_d + \lambda \epsilon_1$, $\lambda$ control smooth 
 
 \section{L6 Image Features Detection and Description}
-Feature: a Salient (distinctive) Local (small subset of pixels) Repeatable (stable in time space) Compact (math-wise) region
+Feature: Salient (distinctive), Local (small subset of pixels), Repeatable (stable in time space), Compact (math-wise) region
 
 Matching (criteria): find correspondence
 
-Match 2 img: weight sum sq diff, $E_{WSSD}(\mathbf{u} = \sum w(\mathbf{x}_i) (I_1(\mathbf{x}_i + \mathbf{u}) - I_0(\mathbf{x}_i))^2)$
+Match two patch: $E_{WSSD}(\mathbf{u} = \sum w(\mathbf{x}_i) (I_1(\mathbf{x}_i + \mathbf{u}) - I_0(\mathbf{x}_i))^2)$
 
-Stability of WSSD -> (I1, I0 own displacement小则I1vI0 criteria stable) -> autocorrelation func
+$E_{AC}(\mathbf{\nabla u}) = \sum w(\mathbf{x}_i) (I_1(\mathbf{x}_i + \mathbf{\nabla u}) - I_0(\mathbf{x}_i))^2)\approx \sum_i w(\mathbf{x}_i) (\nabla I_0(x_i)\cdot\Delta\mathbf{u})^2 =  \Delta\mathbf{u}^T\mathbf{A}\Delta\mathbf{u}$, $\mathbf{A} = w * \begin{bmatrix} I_x^2 & I_xI_y \\ I_xI_y & I^2_y\end{bmatrix}$
 
-Unique minimum: corner; Multiple min aligned: edge; Cloud: no good peak 
-Harris: rotation/bias invarient, but gain/scale will effect $I_x$,$I_y$ (derivative)
+Image gradient: $\nabla I_0(\mathbf{x}_i) = (\dfrac{\partial I_0}{\partial x}, \dfrac{\partial I_0}{\partial y})(\mathbf{x}_i)$
 
-SIFT - location & scale-invariant
-Step1. Find img’s scale space produced by Gaussian convolute (down-sample by 2 each time)
-Step2. Find keypoints w/ Diff-of-Gauss approx. for LoG - select for extrema in 26 neighbours - as the edges
-Step3. Reject strongly asymmetry curvatures (reject edges, keep corner)
-Step4. Assign orientation -> Step 5. Final descriptor; 4x4 grid with 8-orientation(8-bins) histogram per grid ->128-D vector
+\textbf{Harris}: $det \mathbf{A} - \alpha trace \mathbf{A}^2 = \lambda_0\lambda_1 - \alpha(\lambda_0+ \lambda_1)$ rotation/bias invariant, but gain/scale will affect.
+
+\textbf{SIFT} - location \& scale-invariant
+\textbf{Step 1}. Get \textbf{scale space} by Gaussian filter (down-sample by 2 each time)
+\textbf{Step 2}. Find keypoints w/ DoG (handle scale) for LoG (don't handle scale)
+\textbf{Step 3}. Reject asymmetry curvatures (only keep corner)
+\textbf{Step 4}. Assign orientation
+\textbf{Step 5}. Final descriptor
+(4x4 grid with 8-orientation(8-bins) gives 128D vector)
 
 \section{L7 Image Features Matching and Tracking}
-Matchings approch - distance func f(descripter1, d2)→scalar diff: 1. Sum of sq diff (SSD), between 2 descriptor, within threshold= match, 2. Ratio of SSD, best one= match, 3. Euclidean dist. (SIFT/SURF)between descriptor & threshold value, 4. Hamming dist. (BRISK) for dissimilarity
+Matching approach - distance func
+1. SSD (threshold or ratio)
+3. Euclidean dist. (SIFT/SURF), \& threshold
+4. Hamming dist. (BRISK) for dissimilarity
 
 Confusion matrix: measures matching performance (func of threshold). 
-TP: correct match, FN: incorrectly rejected, FP: incorrectly matched, TN: correctly rejected. 
-Receiver operating characteristic curve w/unit rates: area under 大→好
+\textbf{TP}: correct match, 
+\textbf{FN}: incorrectly rejected, 
+\textbf{FP}: incorrectly matched, 
+\textbf{TN}: correctly rejected. 
+\textbf{TODO} Confusion matrix
+\includegraphics[width=6cm]{images/confusion_mtx.png}
 
-TPR: TP/real pos
-FPR: FP/real neg 
-Positive predictive PPV: TP/TP+FP
-Accuracy ACC: TP+TN/P+N
+Receiver operating characteristic curve
+\includegraphics[width=6cm]{images/roc.png}
 
-Feature mapping -1.Compare all feature to all other: n+(n-1)+…=O(n2), 2. Search spatially close features, assume robot 不怎么动, 3. Hash table/vocab tree in feat. space, 4. Multidimentional k-d tree: iteratively split feat.space by diff axis-aligned hyper planes → each split labeled by dimension and split value→ when searching, new feature is hashed into leaf bin and nearby bins are searched
+\textbf{TPR} = TP / (TP+FN)TP/P
+\textbf{FPR}=FP/(FP+TN)=FP/N
+\textbf{PPV}=TP/(TP+FP)=TP/P'
+\textbf{ACC}=(TP+TN)/(P+N)
 
-5. Tracking incrementally: find a set of likely feature loc in 1st img, search for corres locations in subsequent imgs.
-Good cond:1. Limited motion & scene deformation, 2. Good feature to track (same as good-for-matching, or low SSD, or normalized cross-correlation)
-If not good cond: use multi-resolution search or a predictive model. KLT tracker: keep measures of feature dissimilarity between current vs. 1st frame in sequence; discard when dissim grows too large (RMS residual)  w/ an affine motion model to warp imgs’ deformation back to 1st frame
+Feature mapping -
+1. Compare all $O(n^2)$
+2. Search spatially close features
+3. Hash table/vocab tree in feat. space
+4. Multidimentional k-d tree
+
+5. Tracking incrementally: find a set of likely feature loc in 1st img, search for corresponding locations in subsequent imgs.
+Good cond:
+1. Limited motion & scene deformation,
+2. Good feature to track (same as good-for-matching, or low SSD, or normalized cross-correlation)
+If not good cond: use \textbf{multi-resolution search} or a \textbf{predictive model}.
+
+KLT tracker: keep measures of feature dissimilarity between current vs. 1st frame in sequence; discard when dissimilarity grows too large (RMS residual)  w/ an affine motion model to warp imgs’ deformation back to 1st frame
 
 \section{L8 Camera Pose Estimation}
-a
+Pose Estimation = Object pose + camera pose (extrinsic calibration(min 3 pts (+ 3 for $K$))， P3P, PnP)
+
+Gaussian Newton Optimization \textbf{TODO}
+
+Solve constraints on rotation matrix \textbf{TODO}
+initial point (from DLT) is important. no constraints (on vector space). Gauss-Newton approximately fits a quadratic cost.
+
 \section{L9 Stereo Vision}
-a
+Stereo-vision: The \textbf{baseline} between the left and right optical centres provides \textbf{parallax}.
+
+Stereo-matching \textbf{TODO}
+
+Rectification: result in \textbf{fronto-parallel} or \textbf{standard rectified} image, \textbf{TODO}
+
+Disparity (after rectification): difference between the coordinates of the matching points (patches) in both images. In (left) camera frame: $Z = \dfrac{bf}{d}$, $Z$ depth, $b$ baseline, $f$ focal length, $d$ disparity
+
+Stereo camera model: $\begin{bmatrix} x_0 \\ y_0 \\ d\end{bmatrix} = \mathbf{f}(\mathbf{p}_c)=\dfrac{f}{Z}\begin{bmatrix} X \\ Y \\ b\end{bmatrix} + \begin{bmatrix} c_x \\ c_y \\ 0\end{bmatrix}$
+
+Distance is inversely proportional to the absolute value of the disparity; Disparity is directly proportional to the baseline of the stereo array
+for long-range stereo, \textbf{subpixel disparity}
+
+Dense Stereo Correspondence - Local (Window based) Correspondence Algorithms
+
+Similarity measure (SAD, SSD), aggregation (convolution), find the ‘best’ match;
+
+For wide baselines, \textbf{foreshortening} of objects often causes matching to fail (a fixed window size cannot account for perspective change).
+
 \section{L10 Monocular and Stereo Camera Calibration}
-a
+N-Planes Calibration (intrinsic parameters and lens distortion coefficients)
+
+Critically important to include a variety of views, with target at multiple angles and distances, and fully covering entire image plane (over several views) to properly constrain/estimate calibration parameters
+
+Why a checkboard?
+The effect of perspective projection on the cross-junctions (see Project #2) of a checkerboard target can be easily determined (i.e., the amount of foreshortening)
+For circles, the foreshortening effect is more complex, and the centre of the warped ellipse is not the same as the projected centre of the original circle
+\textbf{TODO}
+
+Stereo Camera Calibration
+Stereo calibration is a straightforward extension of monocular calibration, typically using the same target-based approach
+An additional 3D rigid-body transform between the cameras is added to the optimization parameter vector
+Optimization depends on observation of the same features (e.g., target corner points) from both cameras (and features must be matched)
+
 \section{L11 Structure from Motion, Bundle Adjustment}
-a
+
+The SfM Problem
+Structure from Motion (or SfM) is the problem of determining both the   3D positions of landmark points (structure) and a series of camera poses (motion) from a set of sparse image feature correspondences
+
+Triangulation involves finding the 3D position of a landmark point from a set of image correspondences and known camera poses
+
+$\mathbf{v}_j = \mathbf{C}_j^{-1}\mathbf{K}_j^{-1}$ (unnormalized), $e(x) = c_j + d_j\mathbf{v}_j-\mathbf{p}$, $d_j = \mathbf{v}_j \cdot (\mathbf{p} - \mathbf{c}_j)$, optical center in world frame $\mathbf{c}_j$, $\mathbf{q}_j = \mathbf{c}_j + (\mathbf{v}\mathbf{v}^T)(\mathbf{p}-\mathbf{c}_j)$
+
+\textbf{Bundle adjustment} is “is the problem of refining a visual reconstruction to produce jointly optimal 3D structure and viewing parameter estimates”
+
+Viewing parameters include camera poses and/or calibration coefficients • Optimal is with respect to a given cost function, and jointly implies
+simultaneous optimality over both structure and camera variations
+
+M-estimators for outliers
+
+Structure and Sparsity
+
+Naive implementation of nonlinear least squares (the common solution method) is \textbf{cubic in the number of parameters} involved
+• Most adjustment computations involve sparse matrices (i.e., the Jacobian
+is sparse, and also the Hessian), and this can be exploited
+\textbf{Incremental updates} sparse Cholesky factorization (matrix square root)
+• Global parameters (common to all cameras, e.g., intrinsics or stereo rig configuration) should be ordered last to reduce fill-in
+\textbf{TODO}
+
+Alternatives Methods and Implementation Details
+Incremental update methods: extended Kalman filter, a standard estimation tool that operates sequentially
+A variety of techniques are available for the full problem that attempt to reduce the computational complexity: Fixed (sliding) window adjustment, where only parameters in the window are optimized
+
+Keyframe-based algorithms, which select a subset of ‘relevant’ frames to adjust (used in many SLAM systems)
+
+• Often a good idea to use homogenous coordinates for the structure (landmark) parameters to avoid numerical instabilities for points near infinity
+
+Bundle Parameterization
+Points, the homogeneous projective parameterization $\mathbf{\Tilde{x}} = (\Tilde{x}, \Tilde{y}, \Tilde{z}, \Tilde{w})$
+naturally incorporates points near infinity in a finite and well-conditioned way, maintaining numerical stability (although normalization is still needed)
+• For rotations, it is best to use either quaternions (subject to a norm of one) as a global parameterization, or to use rotation matrices
+Incremental local rotation updates can be made using any well-behaved, 3-parameter rotation parameterization
+• Options include local Euler angles, Rodriguez parameters, modified Rodriguez parameters, etc.
+
+Error Modelling in Adjustment
+
+cost of outliers is down-weighted
+• Note that accurate error modelling is at least important as accurate geometric modelling
+Gaussian distributions have short tails, that is, the distributions fall off very quickly compared to more realistic error models
+• Realistic long-tailed distributions are more suited for modelling
+
+
 
 % \section{What is \LaTeX?}
 % \LaTeX (usually pronounced ``LAY teck,'' sometimes ``LAH teck,'' and never ``LAY tex'') is a mathematics typesetting program that is the standard for most professional mathematics writing. It is based on the typesetting program \TeX\ created by Donald Knuth of Stanford University (his first version appeared in 1978). Leslie Lamport was responsible for creating \LaTeX\, a more user friendly version of \TeX. A team of \LaTeX\ programmers created the current version,  \LaTeX\ 2$\varepsilon$.
